@@ -19,6 +19,17 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Asegurar que las rutas de cache existan
+    $paths = [
+        storage_path('framework/views'),
+        storage_path('framework/cache'),
+        storage_path('framework/sessions'),
+    ];
+
+    foreach ($paths as $path) {
+        if (!File::exists($path)) {
+            File::makeDirectory($path, 0755, true);
+        }
+    }
     }
 }
