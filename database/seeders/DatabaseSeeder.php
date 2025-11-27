@@ -15,11 +15,15 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
+        // Admin User
         User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+            'name' => 'Admin User',
+            'email' => 'admin@flyease.com',
+            'password' => bcrypt('password'),
+            'role' => 'admin',
         ]);
+
+        // Flights
+        \App\Models\Flight::factory(50)->create();
     }
 }
