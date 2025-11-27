@@ -10,14 +10,16 @@ use App\Http\Controllers\Admin\AdminFlightController;
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
+// Vuelos (Público)
+Route::get('/flights', [FlightController::class, 'index']);
+Route::get('/flights/{id}', [FlightController::class, 'show']);
+
+
 // Autenticado
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
 
-    // Vuelos
-    Route::get('/flights', [FlightController::class, 'index']);
-    Route::get('/flights/{id}', [FlightController::class, 'show']);
 
     // Reservas
     Route::apiResource('bookings', BookingController::class)->only(['index', 'store']);
