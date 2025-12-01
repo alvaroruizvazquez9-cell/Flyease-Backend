@@ -30,5 +30,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('admin')->prefix('admin')->group(function () {
         Route::apiResource('flights', AdminFlightController::class);
         Route::apiResource('bookings', \App\Http\Controllers\Admin\AdminBookingController::class)->only(['index', 'show', 'destroy']);
+        Route::apiResource('users', \App\Http\Controllers\Admin\AdminUserController::class);
     });
 });
