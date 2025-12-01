@@ -16,14 +16,19 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Admin User
-        User::factory()->create([
+        User::create([
             'name' => 'Admin User',
             'email' => 'admin@flyease.com',
             'password' => bcrypt('password'),
             'role' => 'admin',
         ]);
 
-        // Flights
-        \App\Models\Flight::factory(50)->create();
+        // Crear un usuario normal para pruebas
+        User::create([
+            'name' => 'Test User',
+            'email' => 'user@flyease.com',
+            'password' => bcrypt('password'),
+            'role' => 'user',
+        ]);
     }
 }

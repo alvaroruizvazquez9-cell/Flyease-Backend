@@ -5,9 +5,9 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Flight;
+use App\Models\Payment;
 use Illuminate\Http\Request;
-use Stripe\Stripe;
-use Stripe\PaymentIntent;
+use Illuminate\Support\Str;
 
 class BookingController extends Controller
 {
@@ -15,7 +15,7 @@ class BookingController extends Controller
 
     public function index()
     {
-        $bookings = auth()->user()->bookings()->with('flight')->latest()->paginate(10);
+        $bookings = auth()->user()->bookings()->with(['flight', 'payment'])->latest()->paginate(10);
         return $this->success($bookings);
     }
 
@@ -34,57 +34,59 @@ class BookingController extends Controller
 
         $total = $flight->price * $request->passengers;
 
-        Stripe::setApiKey(config('stripe.secret'));
-        $paymentIntent = PaymentIntent::create([
-            'amount' => $total * 100,
-            'currency' => 'usd',
-            'metadata' => [
-                'flight_id' => $flight->id,
-                'user_id' => auth()->id(),
-            ],
-        ]);
-
         $booking = Booking::create([
             'user_id' => auth()->id(),
             'flight_id' => $flight->id,
-            'booking_reference' => 'BOOK-' . strtoupper(\Str::random(8)),
+            'booking_reference' => 'BOOK-' . strtoupper(Str::random(8)),
             'passengers' => $request->passengers,
             'total_price' => $total,
-            'payment_intent_id' => $paymentIntent->id,
             'status' => 'pending',
         ]);
 
-        return $this->success([
-            'booking' => $booking,
-            'client_secret' => $paymentIntent->client_secret,
-        ], 'Reserva creada. Completa el pago en el frontend.', 201);
+        return $this->success($booking, 'Reserva iniciada. Procede al pago.', 201);
     }
 
     public function confirmPayment(Request $request)
     {
         $request->validate([
-            'payment_intent_id' => 'required',
+            'booking_id' => 'required|exists:bookings,id',
+            'payment_method' => 'required|string',
+            'amount' => 'required|numeric',
         ]);
 
-        $booking = Booking::where('payment_intent_id', $request->payment_intent_id)
+        $booking = Booking::where('id', $request->booking_id)
             ->where('user_id', auth()->id())
             ->firstOrFail();
 
         if ($booking->status !== 'pending') {
-            return $this->error('Reserva ya procesada');
+            return $this->error('Reserva ya procesada o cancelada');
         }
 
-        Stripe::setApiKey(config('stripe.secret'));
-        $pi = PaymentIntent::retrieve($request->payment_intent_id);
-
-        if ($pi->status === 'succeeded') {
-            $flight = $booking->flight;
-            $flight->decrement('available_seats', $booking->passengers);
-            $booking->update(['status' => 'confirmed']);
-            return $this->success($booking, 'Pago confirmado. Reserva exitosa.');
+        if ($request->amount != $booking->total_price) {
+            return $this->error('El monto del pago no coincide con el total de la reserva', 400);
         }
 
-        return $this->error('Pago no completado', 400);
+        // Simular pago exitoso
+        $payment = Payment::create([
+            'booking_id' => $booking->id,
+            'amount' => $request->amount,
+            'payment_method' => $request->payment_method,
+            'status' => 'completed',
+            'transaction_id' => 'TXN-' . strtoupper(Str::random(12)),
+        ]);
+
+        $flight = $booking->flight;
+        $flight->decrement('available_seats', $booking->passengers);
+
+        $booking->update([
+            'status' => 'confirmed',
+            'payment_intent_id' => $payment->transaction_id // Usamos esto como referencia cruzada si es necesario
+        ]);
+
+        return $this->success([
+            'booking' => $booking,
+            'payment' => $payment
+        ], 'Pago confirmado. Reserva exitosa.');
     }
 
     public function cancel($id)
