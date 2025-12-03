@@ -54,8 +54,8 @@ class AdminFlightController extends Controller
         $data = $request->validate([
             'flight_number' => 'required|unique:flights',
             'airline' => 'required|string',
-            'origin' => 'required|string|size:3',
-            'destination' => 'required|string|size:3|different:origin',
+            'origin' => 'required|string|max:100',
+            'destination' => 'required|string|max:100|different:origin',
             'departure_time' => 'required|date|after:now',
             'arrival_time' => 'required|date|after:departure_time',
             'price' => 'required|numeric|min:0',
@@ -79,8 +79,8 @@ class AdminFlightController extends Controller
         $data = $request->validate([
             'flight_number' => 'sometimes|unique:flights,flight_number,' . $id,
             'airline' => 'sometimes|string',
-            'origin' => 'sometimes|string|size:3',
-            'destination' => 'sometimes|string|size:3|different:origin',
+            'origin' => 'sometimes|string|max:100',
+            'destination' => 'sometimes|string|max:100|different:origin',
             'departure_time' => 'sometimes|date|after:now',
             'arrival_time' => 'sometimes|date|after:departure_time',
             'price' => 'sometimes|numeric|min:0',
