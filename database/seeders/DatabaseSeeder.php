@@ -16,19 +16,26 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Admin User
-        User::create([
-            'name' => 'Admin User',
-            'email' => 'admin@flyease.com',
-            'password' => bcrypt('password'),
-            'role' => 'admin',
-        ]);
+        User::firstOrCreate(
+            ['email' => 'admin@flyease.com'],
+            [
+                'name' => 'Admin User',
+                'password' => bcrypt('password'),
+                'role' => 'admin',
+            ]
+        );
 
         // Crear un usuario normal para pruebas
-        User::create([
-            'name' => 'Test User',
-            'email' => 'user@flyease.com',
-            'password' => bcrypt('password'),
-            'role' => 'user',
-        ]);
+        User::firstOrCreate(
+            ['email' => 'user@flyease.com'],
+            [
+                'name' => 'Test User',
+                'password' => bcrypt('password'),
+                'role' => 'user',
+            ]
+        );
+
+        // Generate 1000 flights
+        \App\Models\Flight::factory()->count(1000)->create();
     }
 }
