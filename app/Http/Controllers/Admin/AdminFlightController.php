@@ -12,7 +12,7 @@ class AdminFlightController extends Controller
 
     public function index()
     {
-        $flights = Flight::withTrashed()->paginate(20);
+        $flights = Flight::latest()->paginate(20);
         return $this->success($flights);
     }
 
@@ -35,7 +35,7 @@ class AdminFlightController extends Controller
 
     public function show($id)
     {
-        $flight = Flight::withTrashed()->findOrFail($id);
+        $flight = Flight::findOrFail($id);
         return $this->success($flight);
     }
 
