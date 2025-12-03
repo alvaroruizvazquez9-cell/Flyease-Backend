@@ -10,9 +10,42 @@ class AdminFlightController extends Controller
 {
     use \App\Traits\ApiResponse;
 
-    public function index()
+    public function index(Request $request)
     {
-        $flights = Flight::latest()->paginate(20);
+        $query = Flight::query();
+
+        // Global search across multiple fields
+        if ($request->search) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('flight_number', 'like', "%{$search}%")
+                    ->orWhere('airline', 'like', "%{$search}%")
+                    ->orWhere('origin', 'like', "%{$search}%")
+                    ->orWhere('destination', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter by airline
+        if ($request->airline) {
+            $query->where('airline', $request->airline);
+        }
+
+        // Filter by status
+        if ($request->status) {
+            $query->where('status', $request->status);
+        }
+
+        // Filter by origin
+        if ($request->origin) {
+            $query->where('origin', $request->origin);
+        }
+
+        // Filter by destination
+        if ($request->destination) {
+            $query->where('destination', $request->destination);
+        }
+
+        $flights = $query->latest()->paginate(20);
         return $this->success($flights);
     }
 
