@@ -110,14 +110,19 @@ class BookingController extends Controller
 
     public function destroy($id)
     {
-        $booking = auth()->user()->bookings()->findOrFail($id);
+        try {
+            $booking = auth()->user()->bookings()->findOrFail($id);
 
-        // If booking is confirmed, restore seats before deleting
-        if ($booking->status === 'confirmed') {
-            $booking->flight->increment('available_seats', $booking->passengers);
+            // If booking is confirmed, restore seats before deleting
+            if ($booking->status === 'confirmed') {
+                $booking->flight->increment('available_seats', $booking->passengers);
+            }
+
+            $booking->delete();
+            return $this->success(null, 'Reserva eliminada correctamente');
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Error deleting booking: ' . $e->getMessage());
+            return $this->error('Error al eliminar la reserva: ' . $e->getMessage(), 500);
         }
-
-        $booking->delete();
-        return $this->success(null, 'Reserva eliminada correctamente');
     }
 }
