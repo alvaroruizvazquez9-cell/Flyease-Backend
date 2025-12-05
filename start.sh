@@ -1,16 +1,20 @@
 #!/usr/bin/env bash
-set -eux
+set -e
+
+echo "Starting Laravel application..."
 
 # Ajustar permisos necesarios
 chmod -R 775 storage bootstrap/cache
 
-# Limpiar y regenerar cachés de Laravel
-php artisan config:clear
-php artisan cache:clear
-php artisan view:clear
+# Optimizar configuración para producción
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
 
-# Ejecutar migraciones (opcional, solo si usas BD)
-php artisan migrate --force || true
+# Ejecutar migraciones solo si es necesario
+echo "Running migrations..."
+php artisan migrate --force --no-interaction
 
 # Iniciar el servidor
-php artisan serve --host 0.0.0.0 --port $PORT
+echo "Starting server on port $PORT..."
+exec php artisan serve --host 0.0.0.0 --port $PORT
