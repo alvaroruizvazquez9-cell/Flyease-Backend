@@ -21,29 +21,34 @@ class BookingController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'flight_id' => 'required|exists:flights,id',
-            'passengers' => 'required|integer|min:1|max:10',
-        ]);
+        try {
+            $request->validate([
+                'flight_id' => 'required|exists:flights,id',
+                'passengers' => 'required|integer|min:1|max:10',
+            ]);
 
-        $flight = Flight::findOrFail($request->flight_id);
+            $flight = Flight::findOrFail($request->flight_id);
 
-        if ($flight->available_seats < $request->passengers) {
-            return $this->error('No hay suficientes asientos disponibles', 400);
+            if ($flight->available_seats < $request->passengers) {
+                return $this->error('No hay suficientes asientos disponibles', 400);
+            }
+
+            $total = $flight->price * $request->passengers;
+
+            $booking = Booking::create([
+                'user_id' => auth()->id(),
+                'flight_id' => $flight->id,
+                'booking_reference' => 'BOOK-' . strtoupper(Str::random(8)),
+                'passengers' => $request->passengers,
+                'total_price' => $total,
+                'status' => 'pending',
+            ]);
+
+            return $this->success($booking, 'Reserva iniciada. Procede al pago.', 201);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Error creating booking: ' . $e->getMessage());
+            return $this->error('Error al crear la reserva: ' . $e->getMessage(), 500);
         }
-
-        $total = $flight->price * $request->passengers;
-
-        $booking = Booking::create([
-            'user_id' => auth()->id(),
-            'flight_id' => $flight->id,
-            'booking_reference' => 'BOOK-' . strtoupper(Str::random(8)),
-            'passengers' => $request->passengers,
-            'total_price' => $total,
-            'status' => 'pending',
-        ]);
-
-        return $this->success($booking, 'Reserva iniciada. Procede al pago.', 201);
     }
 
     public function confirmPayment(Request $request)
