@@ -22,9 +22,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
     // Reservas
-    Route::apiResource('bookings', BookingController::class)->only(['index', 'store']);
+    Route::apiResource('bookings', BookingController::class)->only(['index', 'store', 'destroy']);
     Route::post('/bookings/confirm', [BookingController::class, 'confirmPayment']);
-    Route::delete('/bookings/{id}', [BookingController::class, 'cancel']);
+    Route::patch('/bookings/{id}/cancel', [BookingController::class, 'cancel']);
 
     // Admin
     Route::middleware('admin')->prefix('admin')->group(function () {

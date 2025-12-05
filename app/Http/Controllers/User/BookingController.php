@@ -98,11 +98,26 @@ class BookingController extends Controller
     {
         $booking = auth()->user()->bookings()->findOrFail($id);
 
-        if ($booking->status !== 'pending') {
-            return $this->error('Solo se pueden cancelar reservas pendientes');
+        // Allow cancelling confirmed bookings (with seat restoration)
+        if ($booking->status === 'confirmed') {
+            // Restore seats to the flight
+            $booking->flight->increment('available_seats', $booking->passengers);
         }
 
         $booking->update(['status' => 'cancelled']);
         return $this->success(null, 'Reserva cancelada');
+    }
+
+    public function destroy($id)
+    {
+        $booking = auth()->user()->bookings()->findOrFail($id);
+
+        // If booking is confirmed, restore seats before deleting
+        if ($booking->status === 'confirmed') {
+            $booking->flight->increment('available_seats', $booking->passengers);
+        }
+
+        $booking->delete();
+        return $this->success(null, 'Reserva eliminada correctamente');
     }
 }
