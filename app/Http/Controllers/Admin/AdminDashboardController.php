@@ -25,6 +25,29 @@ class AdminDashboardController extends Controller
                 ->get()
         ];
 
+        // Chart Data (Last 30 Days)
+        $chartData = [];
+        $today = \Carbon\Carbon::now();
+
+        for ($i = 29; $i >= 0; $i--) {
+            $date = $today->copy()->subDays($i);
+            $dateString = $date->format('Y-m-d');
+            $label = $date->format('d M');
+
+            // Aggregate data for this day
+            $dayStats = Booking::whereDate('created_at', $dateString)
+                ->selectRaw('count(*) as count, sum(case when status = "confirmed" then total_price else 0 end) as revenue')
+                ->first();
+
+            $chartData[] = [
+                'name' => $label,
+                'revenue' => (float) ($dayStats->revenue ?? 0),
+                'bookings' => (int) ($dayStats->count ?? 0)
+            ];
+        }
+
+        $stats['chart_data'] = $chartData;
+
         return $this->success($stats);
     }
 }
