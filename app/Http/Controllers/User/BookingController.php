@@ -71,7 +71,6 @@ class BookingController extends Controller
             return $this->error('El monto del pago no coincide con el total de la reserva', 400);
         }
 
-        // Simular pago exitoso
         $payment = Payment::create([
             'booking_id' => $booking->id,
             'amount' => $request->amount,
@@ -85,7 +84,7 @@ class BookingController extends Controller
 
         $booking->update([
             'status' => 'confirmed',
-            'payment_intent_id' => $payment->transaction_id // Usamos esto como referencia cruzada si es necesario
+            'payment_intent_id' => $payment->transaction_id
         ]);
 
         return $this->success([
@@ -98,9 +97,7 @@ class BookingController extends Controller
     {
         $booking = auth()->user()->bookings()->findOrFail($id);
 
-        // Allow cancelling confirmed bookings (with seat restoration)
         if ($booking->status === 'confirmed') {
-            // Restore seats to the flight
             $booking->flight->increment('available_seats', $booking->passengers);
         }
 
@@ -113,7 +110,6 @@ class BookingController extends Controller
         try {
             $booking = auth()->user()->bookings()->findOrFail($id);
 
-            // If booking is confirmed, restore seats before deleting
             if ($booking->status === 'confirmed') {
                 $booking->flight->increment('available_seats', $booking->passengers);
             }

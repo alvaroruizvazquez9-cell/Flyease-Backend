@@ -61,7 +61,6 @@ class AdminUserController extends Controller
     {
         $user = User::findOrFail($id);
 
-        // Prevent deleting yourself
         if ($user->id === auth()->id()) {
             return $this->error('No puedes eliminar tu propia cuenta', 400);
         }

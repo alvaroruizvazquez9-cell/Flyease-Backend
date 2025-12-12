@@ -57,7 +57,6 @@ class FlightFactory extends Factory
         ];
 
         $origin = $this->faker->randomElement($cities);
-        // Ensure destination is different from origin
         $destination = $this->faker->randomElement(array_diff($cities, [$origin]));
 
         $departure = $this->faker->dateTimeBetween('now', '+6 months');
