@@ -1,59 +1,122 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# FlyEase Backend
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+FlyEase Backend is a RESTful API built with **Laravel 12**. It powers the FlyEase flight booking application, handling authentication, flight management, bookings, and payments integration with Stripe.
 
-## About Laravel
+## Features
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+### Authentication & Authorization
+- **Sanctum Authentication**: Secure token-based authentication (Bearer Token).
+- **Role-Based Access Control**: Middleware to separate User and Admin access.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### Core Functionalities
+- **User Management**: Registration, login, and profile management.
+- **Flight Management**:
+  - Public: Search and view flight details.
+  - Admin: CRUD operations for flights (schedule, price, route).
+- **Booking System**:
+  - Users can book flights and manage their reservations.
+  - Integration with **Stripe** for payment processing.
+  - Admin oversight of all bookings.
+- **Admin Dashboard**: Aggregated statistics for revenue, bookings, and active flights.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Technology Stack
 
-## Learning Laravel
+- **Framework**: [Laravel 12](https://laravel.com/)
+- **Language**: PHP 8.2
+- **Database**: MySQL
+- **Authentication**: Laravel Sanctum
+- **Payments**: Stripe PHP SDK
+- **Containerization**: Docker
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+## Project Structure
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```
+flyease-backend/
+├── app/
+│   ├── Http/
+│   │   ├── Controllers/    # API Controllers (Auth, User, Admin)
+│   │   ├── Middleware/     # Admin and Auth Middleware
+│   │   └── Requests/       # Form Requests for validation
+│   └── Models/             # Eloquent Models (User, Flight, Booking)
+├── routes/
+│   └── api.php             # API Routes definition
+├── database/               # Migrations, Factories, and Seeders
+├── tests/                  # Unit and Feature tests
+├── Dockerfile              # Docker configuration for production
+└── docker-entrypoint.sh    # Entry script for Render deployment
+```
 
-## Laravel Sponsors
+## Installation & Setup
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/your-username/flyease-backend.git
+   cd flyease-backend
+   ```
 
-### Premium Partners
+2. **Install Dependencies**
+   ```bash
+   composer install
+   ```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+3. **Environment Configuration**
+   Copy the example environment file and configure your database and Stripe keys.
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
 
-## Contributing
+   **Required .env variables:**
+   ```env
+   DB_CONNECTION=mysql
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_DATABASE=flyease
+   DB_USERNAME=root
+   DB_PASSWORD=
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+   STRIPE_KEY=pk_test_...
+   STRIPE_SECRET=sk_test_...
+   ```
 
-## Code of Conduct
+4. **Run Migrations**
+   ```bash
+   php artisan migrate
+   ```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+5. **Start Development Server**
+   ```bash
+   php artisan serve
+   ```
+   The API will be available at `http://localhost:8000`.
 
-## Security Vulnerabilities
+## API Endpoints
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### Public
+- `POST /api/register`: Register a new user.
+- `POST /api/login`: Log in and get a token.
+- `GET /api/flights`: Search for flights.
 
-## License
+### User (Authenticated)
+- `POST /api/bookings`: Create a booking.
+- `POST /api/bookings/confirm`: Confirm payment.
+- `GET /api/me`: Get user profile.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### Admin
+- `GET /api/admin/stats`: Get dashboard statistics.
+- `apiResource /api/admin/flights`: Manage flights.
+- `apiResource /api/admin/users`: Manage users.
+
+## Deployment (Docker/Render)
+
+The project includes a `Dockerfile` optimized for production deployment
+
+1. **Build Docker Image**
+   ```bash
+   docker build -t flyease-backend .
+   ```
+
+2. **Run Container**
+   ```bash
+   docker run -p 8000:80 flyease-backend
+   ```
