@@ -6,7 +6,7 @@ use App\Http\Controllers\User\FlightController;
 use App\Http\Controllers\User\BookingController;
 use App\Http\Controllers\Admin\AdminFlightController;
 
-// Público
+// Públicas
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
